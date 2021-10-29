@@ -1,0 +1,20 @@
+#!/bin/bash
+> /tmp/third-high-mem-cpu
+> /tmp/third-value
+set +x
+echo "----------------------------------------------------------------" >> /tmp/third-high-mem-cpu
+echo "ProcessName             %CPU        %Mem         Port            PID" >> /tmp/third-high-mem-cpu
+echo "----------------------------------------------------------------" >> /tmp/third-high-mem-cpu
+ps -eo pid,user,ppid,%mem,%cpu,cmd --sort=-%cpu | head | tail -n +4 | head -n 1 >> /tmp/third-value
+procname=$(cat /tmp/third-value | awk '{print $6}')
+CPU=$(cat /tmp/third-value | awk '{print $5}')
+Mem=$(cat /tmp/third-value | awk '{print $4}')
+PID=$(cat /tmp/third-value | awk '{print $1}')
+#Port=$(netstat -tulpn | grep $PID | awk '{print $4}' | sed 's/:/ /g' | awk '{print $2}')
+Port=$(lsof -i -P |grep ${PID} | head -n 1 | awk '{print $9}' | sed 's/:/ /g' | awk '{print $2}')
+PID=$(cat /tmp/third-value | awk '{print $1}')
+echo "${procname}        ${CPU}        ${Mem}       ${Port:="No Port tied"}  ${PID}" >> /tmp/third-high-mem-cpu
+cat /tmp/third-high-mem-cpu
+
+
+## It is rare case that process can have high cpu and memory at the same time
